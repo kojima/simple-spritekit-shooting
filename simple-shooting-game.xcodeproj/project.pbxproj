@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08990FF71E12AE470079542D /* beam.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF61E12AE470079542D /* beam.wav */; };
+		08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF81E12AE8B0079542D /* bgm.mp3 */; };
 		08FCB2F21E1297620002192D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FCB2F11E1297620002192D /* AppDelegate.swift */; };
 		08FCB2F81E1297620002192D /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FCB2F71E1297620002192D /* GameScene.swift */; };
 		08FCB2FA1E1297620002192D /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FCB2F91E1297620002192D /* GameViewController.swift */; };
@@ -16,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		08990FF61E12AE470079542D /* beam.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beam.wav; sourceTree = "<group>"; };
+		08990FF81E12AE8B0079542D /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
 		08FCB2EE1E1297620002192D /* simple-shooting-game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "simple-shooting-game.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		08FCB2F11E1297620002192D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		08FCB2F71E1297620002192D /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
@@ -37,6 +41,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		08990FF51E12AE330079542D /* sounds */ = {
+			isa = PBXGroup;
+			children = (
+				08990FF61E12AE470079542D /* beam.wav */,
+				08990FF81E12AE8B0079542D /* bgm.mp3 */,
+			);
+			name = sounds;
+			sourceTree = "<group>";
+		};
 		08FCB2E51E1297620002192D = {
 			isa = PBXGroup;
 			children = (
@@ -56,6 +69,7 @@
 		08FCB2F01E1297620002192D /* simple-shooting-game */ = {
 			isa = PBXGroup;
 			children = (
+				08990FF51E12AE330079542D /* sounds */,
 				08FCB2F11E1297620002192D /* AppDelegate.swift */,
 				08FCB2F71E1297620002192D /* GameScene.swift */,
 				08FCB2F91E1297620002192D /* GameViewController.swift */,
@@ -128,8 +142,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				08FCB2FD1E1297620002192D /* Main.storyboard in Resources */,
+				08990FF71E12AE470079542D /* beam.wav in Resources */,
 				08FCB2FF1E1297620002192D /* Assets.xcassets in Resources */,
 				08FCB3021E1297620002192D /* LaunchScreen.storyboard in Resources */,
+				08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
