@@ -24,6 +24,30 @@ class GameScene: SKScene {
         spaceship.position = CGPoint(x: view.frame.width * 0.5, y: 16)
         addChild(spaceship)
 
+        let starFront = SKSpriteNode(imageNamed: "star_front")
+        starFront.anchorPoint = CGPoint(x: 0, y: 0)
+        starFront.position = CGPoint(x: 0, y: 0)
+        starFront.zPosition = -1
+        addChild(starFront)
+
+        let starFrontActionMove = SKAction.moveBy(x: 0, y: -size.height, duration: 4)
+        let starFrontsActionReset = SKAction.moveBy(x: 0, y: size.height, duration: 0)
+        starFront.run(SKAction.repeatForever(
+            SKAction.sequence([starFrontActionMove, starFrontsActionReset])
+        ))
+
+        let starBack = SKSpriteNode(imageNamed: "star_back")
+        starBack.anchorPoint = CGPoint(x: 0, y: 0)
+        starBack.position = CGPoint(x: 0, y: 0)
+        starBack.zPosition = -2
+        addChild(starBack)
+
+        let starBackActionMove = SKAction.moveBy(x: 0, y: -size.height, duration: 6)
+        let starBackActionReset = SKAction.moveBy(x: 0, y: size.height, duration: 0)
+        starBack.run(SKAction.repeatForever(
+            SKAction.sequence([starBackActionMove, starBackActionReset])
+        ))
+
         run(SKAction.repeatForever(
             SKAction.playSoundFileNamed("bgm.mp3", waitForCompletion: true)
         ))
@@ -59,10 +83,20 @@ class GameScene: SKScene {
 
     override func update(_ currentTime: TimeInterval) {
         if let data = motionManager.accelerometerData {
-            if fabs(data.acceleration.x) > 0.1 || fabs(data.acceleration.y) > 0.1 {
+            if fabs(data.acceleration.x) > 0.05 || fabs(data.acceleration.y) > 0.05 {
                 spaceship.position.x += 5 * (data.acceleration.x > 0 ? 1 : -1)
                 spaceship.position.y += 5 * (data.acceleration.y > 0 ? 1 : -1)
             }
+        }
+        if spaceship.position.x < spaceship.size.width * 0.5 {
+            spaceship.position.x = spaceship.size.width * 0.5
+        } else if spaceship.position.x > size.width - spaceship.size.width * 0.5 {
+            spaceship.position.x = size.width - spaceship.size.width * 0.5
+        }
+        if spaceship.position.y < 0 {
+            spaceship.position.y = 0
+        } else if spaceship.position.y > size.height - spaceship.size.height {
+            spaceship.position.y = size.height - spaceship.size.height
         }
     }
 }
