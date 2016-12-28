@@ -9,6 +9,10 @@ SpriteKitを使って、簡単なシューティングゲームを作成しま�
 * <a href="http://www.freesound.org/people/orangefreesounds/sounds/326479/">BGM</a>もループ再生します。
 * SpriteKitのSKSpriteNodeやSKAction等、基本的な要素を使用して実現しています。
 
+++++++++++++++++++++++++++++++
+最初は、<a href="https://github.com/kojima/simple-spritekit-shooting/tree/step01">"Step 1"</a>から作り始めます
+++++++++++++++++++++++++++++++
+
 # ビューコントローラー(`GameViewController.swift`)
 ``` swift
 //
@@ -85,7 +89,8 @@ class GameScene: SKScene {
 
     private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")  // プレイヤー (スペースシップ)
     private var motionManager: CMMotionManager = CMMotionManager()               // モーションマネージャー: iPadの傾きを検出する
-    private var beamCount = 0   // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
+    private var beamCount = 0                           // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
+    private var lastEnemySpawnedTime: TimeInterval = 0  // 最後に敵を生成した時刻を保持するための変数
 
     override func didMove(to view: SKView) {
 
@@ -186,14 +191,85 @@ class GameScene: SKScene {
         } else if player.position.y > size.height - player.size.height {    // プレイヤーが画面上端よりも上に移動してしまったら、画面上端に戻す
             player.position.y = size.height - player.size.height
         }
+
+        // ランダムな間隔(3秒〜6秒)で敵を発生させる
+        if currentTime - lastEnemySpawnedTime > TimeInterval(3 + arc4random_uniform(3)) {
+            spawnEnemy()                        // 敵を生成する
+            lastEnemySpawnedTime = currentTime  // 最終敵生成時刻を更新する
+        }
+    }
+
+    // 敵を生成するメソッド
+    private func spawnEnemy() {
+        let enemy = SKSpriteNode(imageNamed: "enemy_ship")  // 敵のスプライトを作成する
+        enemy.anchorPoint = CGPoint(x: 0.5, y: 0)           // 敵スプライトの中央下側を原点とする
+        enemy.position.x = size.width * (0.25 + CGFloat(arc4random_uniform(5)) / 10.0)  // 敵の横方向の位置をシーン幅の1/4〜3/4の間の値にする
+        enemy.position.y = size.height                                                  // 敵の縦方向の位置をシーン上端にする
+        enemy.zPosition = player.zPosition + 10 // 敵スプライトをプレイヤーより前面に表示する
+        // 敵スプライトの縦方向のアクションを定義する:
+        //   1. 敵発生音を再生する
+        //   2. (シーン縦幅 + 敵スプライト高さ)分の距離を縦方向に3〜6秒の時間(ランダム時間)で移動する
+        //   3. 敵スプライトをシーンから削除する
+        let verticalAction = SKAction.sequence([
+            SKAction.playSoundFileNamed("enemy_spawn.wav", waitForCompletion: false),
+            SKAction.moveBy(x: 0, y: -(size.height + enemy.size.height), duration: TimeInterval(Int(3 + arc4random_uniform(3)))),
+            SKAction.removeFromParent()
+        ])
+        // 敵スプライトの横方向のアクションを定義する:
+        //   以下の操作をずっと繰り返す:
+        //     1. 0.5〜2秒(ランダム時間)待つ
+        //     2. -50〜50の距離(ランダム距離)を縦方向に0.5秒で移動する
+        let horizontalAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 0.5, withRange: 2),
+                SKAction.run({
+                    enemy.run(SKAction.moveBy(x: 50.0 - CGFloat(arc4random_uniform(100)), y: 0, duration: 0.5))
+                })
+            ])
+        )
+        // 敵スプライトからビームを発射するアクションを定義する
+        //   以下の操作をずっと繰り返す:
+        //     1. 1〜3秒(ランダム時間)待つ
+        //     2. ビーム発射メソッドを実行する
+        let beamAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 1, withRange: 3),
+                SKAction.run({
+                    self.spawnEnemyBeam(enemy: enemy);
+                })
+            ])
+        )
+        enemy.run(SKAction.group([verticalAction, horizontalAction, beamAction]))   // 上の3つのアクションを並行して実行する
+        addChild(enemy) // 敵スプライトをシーンに追加する
+    }
+
+    // 敵のビームを生成するメソッド
+    private func spawnEnemyBeam(enemy: SKSpriteNode) {
+        let beam = SKSpriteNode(imageNamed: "enemy_beam")   // 敵ビームのスプライトを作成する
+        beam.anchorPoint = CGPoint(x: 0.5, y: 0)            // 敵ビームスプライトの中央下側を原点とする
+        beam.position = enemy.position                      // 敵スプライトと同じ位置に配置する
+        beam.zPosition = enemy.zPosition - 1                // 敵スプライトの背面にビームを配置する
+        // ビーム用に以下のアクションを定義する:
+        //   1. 敵ビーム発射音を再生する
+        //   2. シーンの高さ分の距離だけ縦方向に0.75秒かけて移動する
+        //   3. 敵ビームスプライトをシーンから削除する
+        let action = SKAction.sequence([
+            SKAction.playSoundFileNamed("enemy_beam.wav", waitForCompletion: false),
+            SKAction.moveBy(x: 0, y: -size.height, duration: 0.75),
+            SKAction.removeFromParent()
+        ])
+        beam.run(action)    // 上記アクションを実行する
+        addChild(beam)      // 敵ビームをシーンに追加する
     }
 }
 ```
 
 # 使用ゲームアセット
 ## 画像
-* <a href="http://opengameart.org/content/space-shooter-art">スペースシップ/ビーム</a>
+* <a href="http://opengameart.org/content/space-shooter-art">スペースシップ/ビーム/敵</a>
 
 ## サウンド
 * <a href="http://www.freesound.org/people/MusicLegends/sounds/344310/">ビーム音</a>
+* <a href="http://www.freesound.org/people/alpharo/sounds/186696/">敵発生音</a>
+* <a href="http://www.freesound.org/people/Heshl/sounds/269170/">敵ビーム音</a>
 * <a href="http://www.freesound.org/people/orangefreesounds/sounds/326479/">BGM</a>
