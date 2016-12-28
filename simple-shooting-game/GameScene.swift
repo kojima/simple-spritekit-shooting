@@ -15,6 +15,7 @@ class GameScene: SKScene {
     private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")  // プレイヤー (スペースシップ)
     private var motionManager: CMMotionManager = CMMotionManager()               // モーションマネージャー: iPadの傾きを検出する
     private var beamCount = 0   // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
+    private var lastEnemySpawnedTime: TimeInterval = 0
 
     override func didMove(to view: SKView) {
 
@@ -115,5 +116,55 @@ class GameScene: SKScene {
         } else if player.position.y > size.height - player.size.height {    // プレイヤーが画面上端よりも上に移動してしまったら、画面上端に戻す
             player.position.y = size.height - player.size.height
         }
+
+        if currentTime - lastEnemySpawnedTime > Double(3 + arc4random_uniform(3)) {
+            spawnEnemy()
+            lastEnemySpawnedTime = currentTime
+        }
+    }
+
+    private func spawnEnemy() {
+        let enemy = SKSpriteNode(imageNamed: "enemy_ship")
+        enemy.anchorPoint = CGPoint(x: 0.5, y: 0)
+        enemy.position.x = size.width * 0.25 + CGFloat(arc4random_uniform(UInt32(Int(size.width * 0.5))))
+        enemy.position.y = size.height
+        enemy.zPosition = 110
+        let verticalAction = SKAction.sequence([
+            SKAction.playSoundFileNamed("enemy_spawn.wav", waitForCompletion: false),
+            SKAction.moveBy(x: 0, y: -(size.height + enemy.size.height), duration: TimeInterval(Int(3 + arc4random_uniform(3)))),
+            SKAction.removeFromParent()
+        ])
+        let horizontalAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 0.5, withRange: 2),
+                SKAction.run({
+                    enemy.run(SKAction.moveBy(x: 50.0 - CGFloat(arc4random_uniform(100)), y: 0, duration: 0.5))
+                })
+            ])
+        )
+        let beamAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 1, withRange: 3),
+                SKAction.run({
+                    self.spawnEnemyBeam(enemy: enemy);
+                })
+            ])
+        )
+        enemy.run(SKAction.group([verticalAction, horizontalAction, beamAction]))
+        addChild(enemy)
+    }
+
+    private func spawnEnemyBeam(enemy: SKSpriteNode) {
+        let beam = SKSpriteNode(imageNamed: "enemy_beam")
+        beam.anchorPoint = CGPoint(x: 0.5, y: 0)
+        beam.position = enemy.position
+        beam.zPosition = enemy.zPosition - 1
+        let action = SKAction.sequence([
+            SKAction.playSoundFileNamed("enemy_beam.wav", waitForCompletion: false),
+            SKAction.moveBy(x: 0, y: -size.height, duration: 0.75),
+            SKAction.removeFromParent()
+        ])
+        beam.run(action)
+        addChild(beam)
     }
 }
