@@ -10,8 +10,7 @@ SpriteKitを使って、簡単なシューティングゲームを作成しま�
 * SpriteKitのSKSpriteNodeやSKAction等、基本的な要素を使用して実現しています。
 
 # ビューコントローラー(`GameViewController.swift`)
-``` swfit
-
+``` swift
 //
 //  GameViewController.swift
 //  simple-shooting-game
