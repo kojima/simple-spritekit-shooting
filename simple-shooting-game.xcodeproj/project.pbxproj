@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		084F5D781E13763A00C84B09 /* enemy_beam.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D761E13763A00C84B09 /* enemy_beam.wav */; };
 		084F5D791E13763A00C84B09 /* enemy_spawn.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D771E13763A00C84B09 /* enemy_spawn.wav */; };
+		084F5D7D1E138AFC00C84B09 /* enemy_explosion.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D7A1E138AFC00C84B09 /* enemy_explosion.wav */; };
+		084F5D7E1E138AFC00C84B09 /* explosion.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D7B1E138AFC00C84B09 /* explosion.wav */; };
+		084F5D7F1E138AFC00C84B09 /* lose.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D7C1E138AFC00C84B09 /* lose.wav */; };
 		08990FF71E12AE470079542D /* beam.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF61E12AE470079542D /* beam.wav */; };
 		08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF81E12AE8B0079542D /* bgm.mp3 */; };
 		08FCB2F21E1297620002192D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FCB2F11E1297620002192D /* AppDelegate.swift */; };
@@ -22,6 +25,9 @@
 /* Begin PBXFileReference section */
 		084F5D761E13763A00C84B09 /* enemy_beam.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = enemy_beam.wav; sourceTree = "<group>"; };
 		084F5D771E13763A00C84B09 /* enemy_spawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = enemy_spawn.wav; sourceTree = "<group>"; };
+		084F5D7A1E138AFC00C84B09 /* enemy_explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = enemy_explosion.wav; sourceTree = "<group>"; };
+		084F5D7B1E138AFC00C84B09 /* explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = explosion.wav; sourceTree = "<group>"; };
+		084F5D7C1E138AFC00C84B09 /* lose.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = lose.wav; sourceTree = "<group>"; };
 		08990FF61E12AE470079542D /* beam.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beam.wav; sourceTree = "<group>"; };
 		08990FF81E12AE8B0079542D /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
 		08FCB2EE1E1297620002192D /* simple-shooting-game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "simple-shooting-game.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +58,9 @@
 				08990FF81E12AE8B0079542D /* bgm.mp3 */,
 				084F5D761E13763A00C84B09 /* enemy_beam.wav */,
 				084F5D771E13763A00C84B09 /* enemy_spawn.wav */,
+				084F5D7A1E138AFC00C84B09 /* enemy_explosion.wav */,
+				084F5D7B1E138AFC00C84B09 /* explosion.wav */,
+				084F5D7C1E138AFC00C84B09 /* lose.wav */,
 			);
 			name = sounds;
 			sourceTree = "<group>";
@@ -147,11 +156,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				084F5D7E1E138AFC00C84B09 /* explosion.wav in Resources */,
 				08FCB2FD1E1297620002192D /* Main.storyboard in Resources */,
 				084F5D791E13763A00C84B09 /* enemy_spawn.wav in Resources */,
 				08990FF71E12AE470079542D /* beam.wav in Resources */,
 				084F5D781E13763A00C84B09 /* enemy_beam.wav in Resources */,
+				084F5D7F1E138AFC00C84B09 /* lose.wav in Resources */,
 				08FCB2FF1E1297620002192D /* Assets.xcassets in Resources */,
+				084F5D7D1E138AFC00C84B09 /* enemy_explosion.wav in Resources */,
 				08FCB3021E1297620002192D /* LaunchScreen.storyboard in Resources */,
 				08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */,
 			);
