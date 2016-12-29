@@ -15,16 +15,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // ゲームの状態を管理するための列挙型を定義する
     private enum GameState {
-        case Playing    // プレイ中
-        case GameOver   // ゲームオーバー
+        case Playing        // プレイ中
+        case GameOver       // ゲームオーバー
+        case WaitToRestart  // リスタート待ち
     }
 
-    private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")  // プレイヤー (スペースシップ)
-    private var motionManager: CMMotionManager = CMMotionManager()               // モーションマネージャー: iPadの傾きを検出する
-    private var beamCount = 0                           // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
-    private var lastEnemySpawnedTime: TimeInterval = 0  // 最後に敵を生成した時刻を保持するための変数
-    private var bgm = AVAudioPlayer()                   // BGMようのオーディオプレイヤー
-    private var gameState = GameState.Playing           // ゲームの現在の状態
+    private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")     // プレイヤー (スペースシップ)
+    private var motionManager: CMMotionManager = CMMotionManager()                  // モーションマネージャー: iPadの傾きを検出する
+    private var beamCount = 0                                                       // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
+    private var lastEnemySpawnedTime: TimeInterval = 0                              // 最後に敵を生成した時刻を保持するための変数
+    private var bgm = AVAudioPlayer()                                               // BGMようのオーディオプレイヤー
+    private var gameState = GameState.Playing                                       // ゲームの現在の状態
+    private var gameOverTitle: SKSpriteNode = SKSpriteNode(imageNamed: "game_over") // ゲームオーバー用タイトル
 
     private let playerCategory: UInt32 = 0x1 << 0  // プレイヤーとプレイヤービームの衝突判定カテゴリを01(2進数)にする
     private let enemyCategory: UInt32 = 0x1 << 1   // 敵と敵ビームの衝突判定カテゴリを10(2進数)にする
@@ -78,6 +80,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             SKAction.sequence([starBackActionMove, starBackActionReset])
         ))
 
+        // ゲームオーバー用タイトルをセットアップする
+        gameOverTitle.position = CGPoint(x: size.width * 0.5, y: size.height * 0.5)    // ゲームオーバー用タイトルをシーン中央に配置する
+        gameOverTitle.zPosition = 200                                                  // シーンの最前面に表示されるようにする
+
         // BGMをループ再生する
         let bgmUrl = URL(fileURLWithPath: Bundle.main.path(forResource: "bgm", ofType:"mp3")!)
         bgm = try! AVAudioPlayer(contentsOf: bgmUrl)
@@ -91,9 +97,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        // ゲームの状態がプレイ中でない場合は、処理を抜ける
-        if gameState != .Playing {
-            return
+        if gameState == .GameOver {             // ゲームの状態がゲームオーバーの場合:
+            return                              //   処理を抜ける
+        } else if gameState == .WaitToRestart { // ゲームの状態がリスタート待ちの場合:
+            restart()                           //   リスタート処理を実行して
+            return                              //   処理を抜ける
         }
 
         // 現在のビーム発射数が3発に達していない場合、ビームを発射する
@@ -348,9 +356,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // ゲームオーバーを処理するメソッド
     private func gameOver() {
+        // ゲームの状態がプレイ中でなければ処理を抜ける
+        if gameState != .Playing {
+            return
+        }
+
         bgm.stop()                                                              // BGMを停止する
         gameState = .GameOver                                                   // ゲームの状態をゲームオーバーにする
         motionManager.stopDeviceMotionUpdates()                                 // iPadの傾き検出を停止する
-        run(SKAction.playSoundFileNamed("lose.wav", waitForCompletion: false))  // ゲームオーバー用のサウンドを再生する
+        // ゲームオーバー用に以下のアクションを実行する:
+        // 1. ゲームオーバー用のサウンドを再生する
+        // 2. 以下の処理を実行する:
+        //   2-1. ゲームの状態をリスタート待ちにする
+        //   2-2. ゲームオーバー用タイトルをシーンに追加する
+        run(SKAction.sequence([
+            SKAction.playSoundFileNamed("lose.wav", waitForCompletion: true),
+            SKAction.run {
+                self.gameState = .WaitToRestart
+                self.addChild(self.gameOverTitle)
+            }
+        ]))
+    }
+
+    // ゲームリスタートを処理するメソッド
+    private func restart() {
+        // ゲームの状態がリスタート待ちでなければ処理を抜ける
+        if gameState != .WaitToRestart {
+            return
+        }
+
+        bgm.currentTime = 0                         // BGMを先頭に戻す
+        bgm.play()                                  // BGMを再生する
+        gameState = .Playing                        // ゲームの状態をプレイ中にする
+        player.position = CGPoint(x: size.width * 0.5, y: player.size.height * 0.5 + 16)    // プレイヤーを画面中央下側に配置する
+        addChild(player)                            // プレイヤーを再度追加する
+        gameOverTitle.removeFromParent()            // ゲームオーバー用タイトルをシーンから削除する
+        beamCount = 0                               // ビームカウントを0にセットする
+        motionManager.startAccelerometerUpdates()   // iPadの傾き検出を再開する
     }
 }
