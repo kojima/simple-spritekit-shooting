@@ -3,7 +3,7 @@
        <info aa='1' size='50' smooth='1' stretchH='100' bold='0' padding='0,0,0,0' spacing='0,0' charset='' italic='0' unicode='0' face='88 Zen'/>
        <common scaleW='384' packed='0' pages='1' lineHeight='69' scaleH='384' base='57'/>
        <pages>
-            <page id='0' file='88zenFont@2x.png'/>
+            <page id='0' file='88ZenFont@2x.png'/>
        </pages>
         <chars count='98'>
             <char xadvance='19' x='332' chnl='0' yoffset='57' y='44' xoffset='0' id='32' page='0' height='0' width='0'/>
