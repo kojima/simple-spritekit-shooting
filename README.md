@@ -106,6 +106,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private let playerCategory: UInt32 = 0x1 << 0  // プレイヤーとプレイヤービームの衝突判定カテゴリを01(2進数)にする
     private let enemyCategory: UInt32 = 0x1 << 1   // 敵と敵ビームの衝突判定カテゴリを10(2進数)にする
 
+    private let font  = BMGlyphFont(name:"88ZenFont")   // 88Zenフォント(スコア表記に使用する)
+    private var scoreLabel: BMGlyphLabel!               // ゲームスコアを表示するためのラベル
+    private var currentScore = 0                        // 現在のゲームスコア
+
     override func didMove(to view: SKView) {
 
         // 画面をミッドナイトブルー(red = 44, green = 62, blue = 80)に設定する
@@ -169,6 +173,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // iPadの傾き検出を開始する
         motionManager.startAccelerometerUpdates()
+
+        // ゲームスコア用ラベルをセットアップする
+        scoreLabel = BMGlyphLabel(txt: "スコア: \(currentScore)", fnt: font)     // ゲームスコア用ラベルを作成する
+        scoreLabel.setHorizontalAlignment(.left)                                // ラベルの横方向基準点を左端にする
+        scoreLabel.setVerticalAlignment(.top)                                   // ラベルの縦方向基準点を上端にする
+        scoreLabel.position = CGPoint(x: 24, y: size.height - 16)               // ラベルをシーン左上に配置する
+        addChild(scoreLabel)                                                    // ゲームスコア用ラベルをシーンに追加する
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -427,6 +438,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ])
         ]))
         addChild(explosion) // 敵爆発スプライトをシーンに追加する
+
+        // スコアを更新する
+        currentScore += 10                                  // スコアを10加点する
+        scoreLabel.setGlyphText("スコア: \(currentScore)")   // スコアをゲームスコア用ラベルに反映させる
     }
 
     // ゲームオーバーを処理するメソッド
@@ -444,11 +459,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 2. 以下の処理を実行する:
         //   2-1. ゲームの状態をリスタート待ちにする
         //   2-2. ゲームオーバー用タイトルをシーンに追加する
+        //   2-3. ゲームスコア用ラベルをシーンから削除する
         run(SKAction.sequence([
             SKAction.playSoundFileNamed("lose.wav", waitForCompletion: true),
             SKAction.run {
                 self.gameState = .WaitToRestart
                 self.addChild(self.gameOverTitle)
+                self.scoreLabel.removeFromParent()
             }
         ]))
     }
@@ -460,14 +477,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
 
-        bgm.currentTime = 0                         // BGMを先頭に戻す
-        bgm.play()                                  // BGMを再生する
-        gameState = .Playing                        // ゲームの状態をプレイ中にする
+        bgm.currentTime = 0                                 // BGMを先頭に戻す
+        bgm.play()                                          // BGMを再生する
+        gameState = .Playing                                // ゲームの状態をプレイ中にする
         player.position = CGPoint(x: size.width * 0.5, y: player.size.height * 0.5 + 16)    // プレイヤーを画面中央下側に配置する
-        addChild(player)                            // プレイヤーを再度追加する
-        gameOverTitle.removeFromParent()            // ゲームオーバー用タイトルをシーンから削除する
-        beamCount = 0                               // ビームカウントを0にセットする
-        motionManager.startAccelerometerUpdates()   // iPadの傾き検出を再開する
+        addChild(player)                                    // プレイヤーを再度追加する
+        gameOverTitle.removeFromParent()                    // ゲームオーバー用タイトルをシーンから削除する
+        currentScore = 0                                    // 現在のスコアを0点にリセットする
+        scoreLabel.setGlyphText("スコア: \(currentScore)")   // スコアをゲームスコア用ラベルに反映する
+        addChild(scoreLabel)                                // ゲームスコア用ラベルをシーンに追加する
+        beamCount = 0                                       // ビームカウントを0にセットする
+        motionManager.startAccelerometerUpdates()           // iPadの傾き検出を再開する
     }
 }
 ```
@@ -486,3 +506,5 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
 ## フォント
 * <a href="http://akashicdesign.net/">88 Zen</a>(※ 現在は公開されていないようです)
+* <a href="https://www.bmglyph.com/">bmGlyph</a> (ビットマップフォント生成ソフト)
+* <a href="https://github.com/tapouillo/BMGlyphLabelSwift">BMGlyphLabelSwift</a> (bmGlyphで生成したビットマップフォントをSpriteKitゲーム中で使えるようにするためのライブラリ)
