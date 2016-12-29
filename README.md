@@ -13,6 +13,15 @@ SpriteKitを使って、簡単なシューティングゲームを作成しま�
 最初は、<a href="https://github.com/kojima/simple-spritekit-shooting/tree/step01">"Step 1"</a>から作り始めます
 ++++++++++++++++++++++++++++++
 
+## 事前準備: <a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>のインポート
+Step 5を実現するためには、<a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>をゲームプロジェクトに追加する必要があります。
+
+以下の手順に従って、<a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>をプロジェクトに追加してください:
+1. <a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>の最新ソースコードのアーカイブをダウンロードします (<a href="https://github.com/tapouillo/BMGlyphLabelSwift/archive/master.zip">ここ</a>をクリックすると、アーカイブがダウンロードされます)
+2. ダウンロードしたアーカイブを展開します
+3. 展開したフォルダ中にある、"BMGlyphLabel"フォルダ内の`BMGlyphFont.swift`と`BMGlyphLabel.swift`をゲームプロジェクトのプロジェクトナビゲータにドラッグ・アンド・ドロップします
+4. "Choose options for adding these files:"というダイアログ中で、"Copy items if needed"がチェックされていることを確認して"Finish"ボタンをクリックします
+
 # ビューコントローラー(`GameViewController.swift`)
 ``` swift
 //
