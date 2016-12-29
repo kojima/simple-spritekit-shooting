@@ -1,7 +1,7 @@
 # シューティングゲーム
 SpriteKitを使って、簡単なシューティングゲームを作成します。<br/>
 
-<img height="320" alt="ゲーム画面" src="https://github.com/kojima/simple-spritekit-shooting/blob/master/screenshots/sh03.png"/><br/>
+<img height="320" alt="ゲーム画面" src="https://github.com/kojima/simple-spritekit-shooting/blob/master/screenshots/sh05.png"/><br/>
 * 画面をタップすると、<a href="http://opengameart.org/content/space-shooter-art">スペースシップ(プレイヤー)</a>からビームが発射されます。
 * スペースシップは、端末を傾けて操作します。
 * 一度に発射できるビームを3発に制限します。
