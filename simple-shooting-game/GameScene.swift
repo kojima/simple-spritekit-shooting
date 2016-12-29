@@ -31,6 +31,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private let playerCategory: UInt32 = 0x1 << 0  // プレイヤーとプレイヤービームの衝突判定カテゴリを01(2進数)にする
     private let enemyCategory: UInt32 = 0x1 << 1   // 敵と敵ビームの衝突判定カテゴリを10(2進数)にする
 
+    private let font  = BMGlyphFont(name:"88zenFont")
+    private var scoreLabel: BMGlyphLabel!
+    private var currentScore = 0
+
     override func didMove(to view: SKView) {
 
         // 画面をミッドナイトブルー(red = 44, green = 62, blue = 80)に設定する
@@ -94,6 +98,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // iPadの傾き検出を開始する
         motionManager.startAccelerometerUpdates()
+
+        scoreLabel = BMGlyphLabel(txt: "スコア: \(currentScore)", fnt: font)
+        scoreLabel.setHorizontalAlignment(.left)
+        scoreLabel.setVerticalAlignment(.top)
+        scoreLabel.position = CGPoint(x: 24, y: size.height - 16)
+        addChild(scoreLabel)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -352,6 +362,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             ])
         ]))
         addChild(explosion) // 敵爆発スプライトをシーンに追加する
+
+        currentScore += 10
+        scoreLabel.setGlyphText("スコア: \(currentScore)")
     }
 
     // ゲームオーバーを処理するメソッド
@@ -374,6 +387,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             SKAction.run {
                 self.gameState = .WaitToRestart
                 self.addChild(self.gameOverTitle)
+                self.scoreLabel.removeFromParent()
             }
         ]))
     }
@@ -391,6 +405,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.position = CGPoint(x: size.width * 0.5, y: player.size.height * 0.5 + 16)    // プレイヤーを画面中央下側に配置する
         addChild(player)                            // プレイヤーを再度追加する
         gameOverTitle.removeFromParent()            // ゲームオーバー用タイトルをシーンから削除する
+        currentScore = 0
+        scoreLabel.setGlyphText("スコア: \(currentScore)")
+        addChild(scoreLabel)
         beamCount = 0                               // ビームカウントを0にセットする
         motionManager.startAccelerometerUpdates()   // iPadの傾き検出を再開する
     }

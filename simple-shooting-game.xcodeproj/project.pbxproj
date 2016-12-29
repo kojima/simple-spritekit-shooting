@@ -12,6 +12,10 @@
 		084F5D7D1E138AFC00C84B09 /* enemy_explosion.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D7A1E138AFC00C84B09 /* enemy_explosion.wav */; };
 		084F5D7E1E138AFC00C84B09 /* explosion.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D7B1E138AFC00C84B09 /* explosion.wav */; };
 		084F5D7F1E138AFC00C84B09 /* lose.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D7C1E138AFC00C84B09 /* lose.wav */; };
+		084F5D8B1E1556A000C84B09 /* 88zenFont.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D891E1556A000C84B09 /* 88zenFont.atlas */; };
+		084F5D8C1E1556A000C84B09 /* 88zenFont@2x.xml in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D8A1E1556A000C84B09 /* 88zenFont@2x.xml */; };
+		084F5D901E1556D800C84B09 /* BMGlyphFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F5D8E1E1556D800C84B09 /* BMGlyphFont.swift */; };
+		084F5D911E1556D800C84B09 /* BMGlyphLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F5D8F1E1556D800C84B09 /* BMGlyphLabel.swift */; };
 		08990FF71E12AE470079542D /* beam.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF61E12AE470079542D /* beam.wav */; };
 		08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF81E12AE8B0079542D /* bgm.mp3 */; };
 		08FCB2F21E1297620002192D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FCB2F11E1297620002192D /* AppDelegate.swift */; };
@@ -28,6 +32,10 @@
 		084F5D7A1E138AFC00C84B09 /* enemy_explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = enemy_explosion.wav; sourceTree = "<group>"; };
 		084F5D7B1E138AFC00C84B09 /* explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = explosion.wav; sourceTree = "<group>"; };
 		084F5D7C1E138AFC00C84B09 /* lose.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = lose.wav; sourceTree = "<group>"; };
+		084F5D891E1556A000C84B09 /* 88zenFont.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = 88zenFont.atlas; sourceTree = "<group>"; };
+		084F5D8A1E1556A000C84B09 /* 88zenFont@2x.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "88zenFont@2x.xml"; sourceTree = "<group>"; };
+		084F5D8E1E1556D800C84B09 /* BMGlyphFont.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BMGlyphFont.swift; sourceTree = "<group>"; };
+		084F5D8F1E1556D800C84B09 /* BMGlyphLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BMGlyphLabel.swift; sourceTree = "<group>"; };
 		08990FF61E12AE470079542D /* beam.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beam.wav; sourceTree = "<group>"; };
 		08990FF81E12AE8B0079542D /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
 		08FCB2EE1E1297620002192D /* simple-shooting-game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "simple-shooting-game.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +59,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		084F5D801E15541400C84B09 /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				084F5D891E1556A000C84B09 /* 88zenFont.atlas */,
+				084F5D8A1E1556A000C84B09 /* 88zenFont@2x.xml */,
+			);
+			name = fonts;
+			sourceTree = "<group>";
+		};
+		084F5D8D1E1556A800C84B09 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				084F5D8E1E1556D800C84B09 /* BMGlyphFont.swift */,
+				084F5D8F1E1556D800C84B09 /* BMGlyphLabel.swift */,
+			);
+			name = utils;
+			sourceTree = "<group>";
+		};
 		08990FF51E12AE330079542D /* sounds */ = {
 			isa = PBXGroup;
 			children = (
@@ -84,6 +110,8 @@
 		08FCB2F01E1297620002192D /* simple-shooting-game */ = {
 			isa = PBXGroup;
 			children = (
+				084F5D8D1E1556A800C84B09 /* utils */,
+				084F5D801E15541400C84B09 /* fonts */,
 				08990FF51E12AE330079542D /* sounds */,
 				08FCB2F11E1297620002192D /* AppDelegate.swift */,
 				08FCB2F71E1297620002192D /* GameScene.swift */,
@@ -165,7 +193,9 @@
 				08FCB2FF1E1297620002192D /* Assets.xcassets in Resources */,
 				084F5D7D1E138AFC00C84B09 /* enemy_explosion.wav in Resources */,
 				08FCB3021E1297620002192D /* LaunchScreen.storyboard in Resources */,
+				084F5D8C1E1556A000C84B09 /* 88zenFont@2x.xml in Resources */,
 				08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */,
+				084F5D8B1E1556A000C84B09 /* 88zenFont.atlas in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,8 +206,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				084F5D911E1556D800C84B09 /* BMGlyphLabel.swift in Sources */,
 				08FCB2F81E1297620002192D /* GameScene.swift in Sources */,
 				08FCB2FA1E1297620002192D /* GameViewController.swift in Sources */,
+				084F5D901E1556D800C84B09 /* BMGlyphFont.swift in Sources */,
 				08FCB2F21E1297620002192D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
