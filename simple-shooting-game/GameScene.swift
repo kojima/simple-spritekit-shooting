@@ -15,9 +15,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // ゲームの状態を管理するための列挙型を定義する
     private enum GameState {
-        case Playing        // プレイ中
-        case GameOver       // ゲームオーバー
-        case WaitToRestart  // リスタート待ち
+        case Playing                // プレイ中
+        case GameWin                // ゲームクリア
+        case GameOver               // ゲームオーバー
+        case WaitToRestartFromWin   // ゲームクリアからのリスタート待ち
+        case WaitToRestartFromLose  // ゲームオーバーからのリスタート待ち
+    }
+
+    // ゲームの残り距離を表示するためのクラスを定義する
+    private class DistanceMeter: SKSpriteNode {
+        let currentMeter = SKSpriteNode()
+
+        convenience init(size: CGSize) {
+            self.init(texture: nil, color: SKColor.white, size: size)
+            // 現在の進行距離を表示するためのメーターをセットアップする
+            currentMeter.size = CGSize(width: size.width, height: 0)
+            currentMeter.color = SKColor(red: 26 / 255.0, green: 188 / 255.0, blue: 156 / 255.0, alpha: 1.0)
+            currentMeter.anchorPoint = CGPoint.zero
+            addChild(currentMeter)
+        }
+
+        // 進行距離をアップデートするメソッド
+        func update(_ distance: Double) {
+            currentMeter.size = CGSize(width: size.width, height: size.height * CGFloat(distance / 100.0))
+        }
     }
 
     private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")     // プレイヤー (スペースシップ)
@@ -26,7 +47,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var lastEnemySpawnedTime: TimeInterval = 0                              // 最後に敵を生成した時刻を保持するための変数
     private var bgm = AVAudioPlayer()                                               // BGMようのオーディオプレイヤー
     private var gameState = GameState.Playing                                       // ゲームの現在の状態
-    private var gameOverTitle: SKSpriteNode = SKSpriteNode(imageNamed: "game_over") // ゲームオーバー用タイトル
+    private var gameWinTitle = SKSpriteNode(imageNamed: "game_win")                 // ゲームクリア用タイトル
+    private var gameOverTitle = SKSpriteNode(imageNamed: "game_over")               // ゲームオーバー用タイトル
+    private var restartButton = SKSpriteNode(imageNamed: "restart_button")          // リスタートボタン
 
     private let playerCategory: UInt32 = 0x1 << 0  // プレイヤーとプレイヤービームの衝突判定カテゴリを01(2進数)にする
     private let enemyCategory: UInt32 = 0x1 << 1   // 敵と敵ビームの衝突判定カテゴリを10(2進数)にする
@@ -34,6 +57,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private let font  = BMGlyphFont(name:"88ZenFont")   // 88Zenフォント(スコア表記に使用する)
     private var scoreLabel: BMGlyphLabel!               // ゲームスコアを表示するためのラベル
     private var currentScore = 0                        // 現在のゲームスコア
+
+    private var distanceMeter: DistanceMeter!           // ゲームの進行距離表示メーター
+    private var gameStartTime: TimeInterval!            // ゲームのスタート時間
 
     override func didMove(to view: SKView) {
 
@@ -84,9 +110,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             SKAction.sequence([starBackActionMove, starBackActionReset])
         ))
 
+        // ゲームクリア用タイトルをセットアップする
+        gameWinTitle.position = CGPoint(x: size.width * 0.5, y: size.height * 0.5 + 80)     // シーン中央より少し上に配置する
+        gameWinTitle.zPosition = 200                                                        // シーンの最前面に表示されるようにする
+
+        // ゲームクリアの際のリスタートボタンをセットアップする
+        restartButton.position = CGPoint(x: size.width * 0.5, y: size.height * 0.5 - 88)    // シーンの中央より少し下に配置する
+        restartButton.zPosition = 200                                                       // シーンの最前面に表示されるようにする
+
         // ゲームオーバー用タイトルをセットアップする
-        gameOverTitle.position = CGPoint(x: size.width * 0.5, y: size.height * 0.5)    // ゲームオーバー用タイトルをシーン中央に配置する
-        gameOverTitle.zPosition = 200                                                  // シーンの最前面に表示されるようにする
+        gameOverTitle.position = CGPoint(x: size.width * 0.5, y: size.height * 0.5)         // シーン中央に配置する
+        gameOverTitle.zPosition = 200                                                       // シーンの最前面に表示されるようにする
 
         // BGMをループ再生する
         let bgmUrl = URL(fileURLWithPath: Bundle.main.path(forResource: "bgm", ofType:"mp3")!)
@@ -105,16 +139,59 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.setVerticalAlignment(.top)                                   // ラベルの縦方向基準点を上端にする
         scoreLabel.position = CGPoint(x: 24, y: size.height - 16)               // ラベルをシーン左上に配置する
         addChild(scoreLabel)                                                    // ゲームスコア用ラベルをシーンに追加する
+
+        // ゲームの進行距離表示メーターをセットアップする
+        distanceMeter = DistanceMeter(size: CGSize(width: 16, height: size.height))
+        distanceMeter.anchorPoint = CGPoint.zero                        // 原点を左下にする
+        distanceMeter.position = CGPoint(x: size.width - 16, y: 0)      // シーンの左端に配置する
+        addChild(distanceMeter)                                         // メーターをシーンに追加する
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if gameState == .GameOver {             // ゲームの状態がゲームオーバーの場合:
-            return                              //   処理を抜ける
-        } else if gameState == .WaitToRestart { // ゲームの状態がリスタート待ちの場合:
-            restart()                           //   リスタート処理を実行して
-            return                              //   処理を抜ける
+        if gameState == .WaitToRestartFromLose {        // ゲームの状態がゲームオーバーからのリスタート待ちの場合
+            restart()
+        } else if gameState == .WaitToRestartFromWin {  // ゲームの状態がゲームクリアからのリスタート待ちの場合
+            if let touch = touches.first {
+                let location = touch.location(in: self) //     タッチされた場所を取得する
+                let touchedNode = atPoint(location)     //     タッチされた場所に位置するノードを取得する
+                if touchedNode == restartButton {       //     タッチされたノードがリスタートボタンだった場合
+                    run(SKAction.playSoundFileNamed("tap.wav", waitForCompletion: false))
+                    restart()
+                } else {                                //     それ以外の場所がタッチされた場合
+                    fireBeam()
+                }
+            }
+        } else if gameState == .Playing {               // ゲームの状態がプレイ中の場合
+            fireBeam()
         }
+    }
 
+    override func update(_ currentTime: TimeInterval) {
+        if gameState == .Playing {  // ゲームの状態がプレイ中の場合
+            controlPlayer()
+
+            // ランダムな間隔(3秒〜6秒)で敵を発生させる
+            if currentTime - lastEnemySpawnedTime > TimeInterval(3 + arc4random_uniform(3)) {
+                spawnEnemy()                        // 敵を生成する
+                lastEnemySpawnedTime = currentTime  // 最終敵生成時刻を更新する
+            }
+
+            if gameStartTime == nil {                                   // ゲーム開始時刻が未設定の場合
+                gameStartTime = currentTime                             //     現在の時刻をゲーム開始時刻に設定する
+            } else {                                                    // 既にゲーム開始時刻が設定されている場合
+                let currentDistance = (currentTime - gameStartTime) * 2 //     現在の距離を計算する
+                distanceMeter.update(currentDistance)                   //     ゲームの進行距離表示メーターを更新する
+                if currentDistance > 100 {                              //     進行距離が100を超えた場合
+                    gameWin()                                           //         ゲームクリアの処理をする
+                }
+            }
+        } else if gameState == .GameWin || gameState == .WaitToRestartFromWin { // ゲームの状態がゲームクリアまたはゲームクリアからのリスタート待ちの場合
+            controlPlayer()
+        }
+    }
+
+    // プレイヤーからのビームを発射を処理するメソッド
+    private func fireBeam() {
         // 現在のビーム発射数が3発に達していない場合、ビームを発射する
         if beamCount < 3 {
             // ビーム用のスプライトを生成する
@@ -146,13 +223,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             beamCount += 1      // ビーム発射数を1つ増やす
         }
     }
-    
-    override func update(_ currentTime: TimeInterval) {
-        // ゲームの状態がプレイ中でない場合は、処理を抜ける
-        if gameState != .Playing {
-            return
-        }
 
+    // プレイヤー操作を処理するメソッド
+    private func controlPlayer() {
         // iPadの傾きデータが取得できた場合、プレイヤーをコントロールする
         if let data = motionManager.accelerometerData {
             // iPadの横方向の傾きが一定以上だった場合、傾き量に応じてプレイヤーを横方向に移動させる
@@ -173,12 +246,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player.position.y = player.size.height * 0.5
         } else if player.position.y > size.height - player.size.height * 0.5 {  // プレイヤーが画面上端よりも上に移動してしまったら、画面上端に戻す
             player.position.y = size.height - player.size.height * 0.5
-        }
-
-        // ランダムな間隔(3秒〜6秒)で敵を発生させる
-        if currentTime - lastEnemySpawnedTime > TimeInterval(3 + arc4random_uniform(3)) {
-            spawnEnemy()                        // 敵を生成する
-            lastEnemySpawnedTime = currentTime  // 最終敵生成時刻を更新する
         }
     }
 
@@ -321,15 +388,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ]))
         addChild(explosion) // プレイヤー爆発スプライトをシーンに追加する
 
-        // ゲームオーバーの演出を以下のアクションで実行する:
-        // 1. 1.5秒間待つ
-        // 2. ゲームオーバー処理用のメソッドを実行する
-        run(SKAction.sequence([
-            SKAction.wait(forDuration: 1.5),
-            SKAction.run {
-                self.gameOver()
-            },
-        ]))
+        gameOver()
     }
 
     // 敵を爆発させるメソッド
@@ -369,6 +428,58 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.setGlyphText("スコア: \(currentScore)")   // スコアをゲームスコア用ラベルに反映させる
     }
 
+    // ゲームクリアを処理するメソッド
+    private func gameWin() {
+        // 現在のゲームの状態がプレイ中でない場合は処理を抜ける
+        if gameState != .Playing {
+            return
+        }
+
+        // ゲームクリア時にシーン内に残っている敵機はすべて爆発させ、
+        // 敵ビームはシーンから削除する
+        for node in children {
+            if node.name == "enemy_ship" {
+                explodeEnemy(node)
+            } else if node.name == "enemy_beam" {
+                node.removeFromParent()
+            }
+        }
+
+        gameState = .GameWin                                                    // ゲームの状態をゲームクリアにする
+        run(SKAction.playSoundFileNamed("win.wav", waitForCompletion: false))   // ゲームクリア用サウンドを再生する
+        gameWinTitle.alpha = 0  // ゲームクリアタイトルの透明度(アルファ)を透明にする
+        // ゲームクリアタイトルで以下のアクションを実行する:
+        // 1. 以下の処理を3回繰り返す:
+        //   1-1. 0.2秒間でフェードイン
+        //   1-2. 0.2秒間でフェードアウト
+        // 2. 0.2秒間でフェードイン
+        gameWinTitle.run(SKAction.sequence([
+            SKAction.repeat(SKAction.sequence([
+                SKAction.fadeIn(withDuration: 0.2),
+                SKAction.fadeOut(withDuration: 0.2)
+            ]), count: 3),
+            SKAction.fadeIn(withDuration: 0.2)
+        ]))
+        addChild(gameWinTitle)  // ゲームクリア用のタイトルをシーンに追加する
+
+        // 以下のアクションをシーンで実行する:
+        // 1. 2.5秒間待つ
+        // 2. 以下の処理を実行する:
+        //   2-1. スコアラベルを画面中央に配置する
+        //   2-2. リスタートボタンをシーンに追加する
+        //   2-3. ゲームの状態をゲームクリアからのリスタート待ちにする
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: 2.5),
+            SKAction.run {
+                self.scoreLabel.setHorizontalAlignment(.centered)
+                self.scoreLabel.setVerticalAlignment(.middle)
+                self.scoreLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.height * 0.5)
+                self.addChild(self.restartButton)
+                self.gameState = .WaitToRestartFromWin
+            }
+        ]))
+    }
+
     // ゲームオーバーを処理するメソッド
     private func gameOver() {
         // ゲームの状態がプレイ中でなければ処理を抜ける
@@ -376,42 +487,58 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
 
-        bgm.stop()                                                              // BGMを停止する
-        gameState = .GameOver                                                   // ゲームの状態をゲームオーバーにする
-        motionManager.stopDeviceMotionUpdates()                                 // iPadの傾き検出を停止する
-        // ゲームオーバー用に以下のアクションを実行する:
-        // 1. ゲームオーバー用のサウンドを再生する
-        // 2. 以下の処理を実行する:
-        //   2-1. ゲームの状態をリスタート待ちにする
-        //   2-2. ゲームオーバー用タイトルをシーンに追加する
-        //   2-3. ゲームスコア用ラベルをシーンから削除する
+        gameState = .GameOver                   // ゲームの状態をゲームオーバーにする
+        motionManager.stopDeviceMotionUpdates() // iPadの傾き検出を停止する
+
+        // ゲームオーバーの演出を以下のアクションで実行する:
+        // 1. 1.5秒間待つ
+        // 2. BGMを停止する
+        // 3. ゲームオーバー用サウンドを再生する
+        // 4. 以下の処理を実行する:
+        //   4-1. ゲームの状態をリスタート待ちにする
+        //   4-2. ゲームオーバー用タイトルをシーンに追加する
+        //   4-3. ゲームスコア用ラベルをシーンから削除する
         run(SKAction.sequence([
+            SKAction.wait(forDuration: 1.5),
+            SKAction.run {
+                self.bgm.stop()
+            },
             SKAction.playSoundFileNamed("lose.wav", waitForCompletion: true),
             SKAction.run {
-                self.gameState = .WaitToRestart
+                self.gameState = .WaitToRestartFromLose
                 self.addChild(self.gameOverTitle)
                 self.scoreLabel.removeFromParent()
-            }
+            },
         ]))
     }
 
     // ゲームリスタートを処理するメソッド
     private func restart() {
         // ゲームの状態がリスタート待ちでなければ処理を抜ける
-        if gameState != .WaitToRestart {
+        if gameState != .WaitToRestartFromWin && gameState != .WaitToRestartFromLose {
             return
         }
 
         bgm.currentTime = 0                                 // BGMを先頭に戻す
         bgm.play()                                          // BGMを再生する
-        gameState = .Playing                                // ゲームの状態をプレイ中にする
-        player.position = CGPoint(x: size.width * 0.5, y: player.size.height * 0.5 + 16)    // プレイヤーを画面中央下側に配置する
-        addChild(player)                                    // プレイヤーを再度追加する
-        gameOverTitle.removeFromParent()                    // ゲームオーバー用タイトルをシーンから削除する
         currentScore = 0                                    // 現在のスコアを0点にリセットする
         scoreLabel.setGlyphText("スコア: \(currentScore)")   // スコアをゲームスコア用ラベルに反映する
-        addChild(scoreLabel)                                // ゲームスコア用ラベルをシーンに追加する
         beamCount = 0                                       // ビームカウントを0にセットする
+        distanceMeter.update(0)                             // ゲームの進行距離表示メーターをリセットする
+        gameStartTime = nil                                 // ゲーム開始時刻を未設定にする
         motionManager.startAccelerometerUpdates()           // iPadの傾き検出を再開する
+        if gameState == .WaitToRestartFromWin {                         // ゲームクリアからのリスタート待ちの場合
+            gameWinTitle.removeFromParent()                             //     ゲームクリア用タイトルをシーンから削除する
+            restartButton.removeFromParent()                            //     リスタートボタンをシーンから削除する
+            scoreLabel.setHorizontalAlignment(.left)
+            scoreLabel.setVerticalAlignment(.top)
+            scoreLabel.position = CGPoint(x: 24, y: size.height - 16)   //     スコアラベルをシーン左上に配置し直す
+        } else if gameState == .WaitToRestartFromLose {                 // ゲームオーバーからのリスタート待ちの場合
+            gameOverTitle.removeFromParent()                            //     ゲームオーバー用タイトルをシーンから削除する
+            player.position = CGPoint(x: size.width * 0.5, y: player.size.height * 0.5 + 16)    // プレイヤーを画面中央下側に配置する
+            addChild(player)                                            //     プレイヤーを再度追加する
+            addChild(scoreLabel)                                        //     ゲームスコア用ラベルをシーンに追加する
+        }
+        gameState = .Playing                                // ゲームの状態をプレイ中にする
     }
 }

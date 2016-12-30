@@ -16,6 +16,8 @@
 		084F5D951E15CDFF00C84B09 /* 88ZenFont@2x.xml in Resources */ = {isa = PBXBuildFile; fileRef = 084F5D931E15CDFF00C84B09 /* 88ZenFont@2x.xml */; };
 		084F5D9A1E15CE7300C84B09 /* BMGlyphFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F5D981E15CE7300C84B09 /* BMGlyphFont.swift */; };
 		084F5D9B1E15CE7300C84B09 /* BMGlyphLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 084F5D991E15CE7300C84B09 /* BMGlyphLabel.swift */; };
+		084F5DA11E15E0AC00C84B09 /* win.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5DA01E15E0AC00C84B09 /* win.wav */; };
+		084F5DA31E15F90200C84B09 /* tap.wav in Resources */ = {isa = PBXBuildFile; fileRef = 084F5DA21E15F90200C84B09 /* tap.wav */; };
 		08990FF71E12AE470079542D /* beam.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF61E12AE470079542D /* beam.wav */; };
 		08990FF91E12AE8B0079542D /* bgm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 08990FF81E12AE8B0079542D /* bgm.mp3 */; };
 		08FCB2F21E1297620002192D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FCB2F11E1297620002192D /* AppDelegate.swift */; };
@@ -36,6 +38,8 @@
 		084F5D931E15CDFF00C84B09 /* 88ZenFont@2x.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "88ZenFont@2x.xml"; sourceTree = "<group>"; };
 		084F5D981E15CE7300C84B09 /* BMGlyphFont.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BMGlyphFont.swift; sourceTree = "<group>"; };
 		084F5D991E15CE7300C84B09 /* BMGlyphLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BMGlyphLabel.swift; sourceTree = "<group>"; };
+		084F5DA01E15E0AC00C84B09 /* win.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = win.wav; sourceTree = "<group>"; };
+		084F5DA21E15F90200C84B09 /* tap.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = tap.wav; sourceTree = "<group>"; };
 		08990FF61E12AE470079542D /* beam.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = beam.wav; sourceTree = "<group>"; };
 		08990FF81E12AE8B0079542D /* bgm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bgm.mp3; sourceTree = "<group>"; };
 		08FCB2EE1E1297620002192D /* simple-shooting-game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "simple-shooting-game.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,6 +77,8 @@
 		08990FF51E12AE330079542D /* sounds */ = {
 			isa = PBXGroup;
 			children = (
+				084F5DA21E15F90200C84B09 /* tap.wav */,
+				084F5DA01E15E0AC00C84B09 /* win.wav */,
 				08990FF61E12AE470079542D /* beam.wav */,
 				08990FF81E12AE8B0079542D /* bgm.mp3 */,
 				084F5D761E13763A00C84B09 /* enemy_beam.wav */,
@@ -181,8 +187,10 @@
 				084F5D791E13763A00C84B09 /* enemy_spawn.wav in Resources */,
 				08990FF71E12AE470079542D /* beam.wav in Resources */,
 				084F5D781E13763A00C84B09 /* enemy_beam.wav in Resources */,
+				084F5DA11E15E0AC00C84B09 /* win.wav in Resources */,
 				084F5D951E15CDFF00C84B09 /* 88ZenFont@2x.xml in Resources */,
 				084F5D7F1E138AFC00C84B09 /* lose.wav in Resources */,
+				084F5DA31E15F90200C84B09 /* tap.wav in Resources */,
 				08FCB2FF1E1297620002192D /* Assets.xcassets in Resources */,
 				084F5D7D1E138AFC00C84B09 /* enemy_explosion.wav in Resources */,
 				08FCB3021E1297620002192D /* LaunchScreen.storyboard in Resources */,
