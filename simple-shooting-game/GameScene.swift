@@ -44,7 +44,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")     // プレイヤー (スペースシップ)
     private var motionManager: CMMotionManager = CMMotionManager()                  // モーションマネージャー: iPadの傾きを検出する
     private var beamCount = 0                                                       // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
-    private var lastEnemySpawnedTime: TimeInterval = 0                              // 最後に敵を生成した時刻を保持するための変数
+    private var lastEnemySpawnedTime: TimeInterval!                                 // 最後に敵を生成した時刻を保持するための変数
     private var bgm = AVAudioPlayer()                                               // BGMようのオーディオプレイヤー
     private var gameState = GameState.Playing                                       // ゲームの現在の状態
     private var gameWinTitle = SKSpriteNode(imageNamed: "game_win")                 // ゲームクリア用タイトル
@@ -171,11 +171,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             controlPlayer()
 
             // ランダムな間隔(3秒〜6秒)で敵を発生させる
-            if currentTime - lastEnemySpawnedTime > TimeInterval(3 + arc4random_uniform(3)) {
+            if lastEnemySpawnedTime == nil {        // 最終敵生成時刻が未設定の場合
+                lastEnemySpawnedTime = currentTime  // 現在時刻を最終敵生成時刻に設定する
+            } else if currentTime - lastEnemySpawnedTime > TimeInterval(3 + arc4random_uniform(3)) {
                 spawnEnemy()                        // 敵を生成する
                 lastEnemySpawnedTime = currentTime  // 最終敵生成時刻を更新する
             }
 
+            // ゲームの進行距離を更新する
             if gameStartTime == nil {                                   // ゲーム開始時刻が未設定の場合
                 gameStartTime = currentTime                             //     現在の時刻をゲーム開始時刻に設定する
             } else {                                                    // 既にゲーム開始時刻が設定されている場合
@@ -230,7 +233,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if let data = motionManager.accelerometerData {
             // iPadの横方向の傾きが一定以上だった場合、傾き量に応じてプレイヤーを横方向に移動させる
             if fabs(data.acceleration.x) > 0.2 {
-                player.position.x += 5 * (data.acceleration.x > 0 ? 1 : -1)
+                player.position.x += CGFloat(20 * data.acceleration.x)
+                if data.acceleration.x > 0 {
+                    player.texture = SKTexture(imageNamed: "spaceship03")
+                } else {
+                    player.texture = SKTexture(imageNamed: "spaceship02")
+                }
+            } else {
+                player.texture = SKTexture(imageNamed: "spaceship01")
             }
             // iPadの縦方向の傾きが一定以上だった場合、傾き量に応じてプレイヤーを縦方向に移動させる
             if fabs(data.acceleration.y) > 0.2 {
@@ -526,6 +536,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         beamCount = 0                                       // ビームカウントを0にセットする
         distanceMeter.update(0)                             // ゲームの進行距離表示メーターをリセットする
         gameStartTime = nil                                 // ゲーム開始時刻を未設定にする
+        lastEnemySpawnedTime = nil                          // 最終敵発生時刻を未設定にする
         motionManager.startAccelerometerUpdates()           // iPadの傾き検出を再開する
         if gameState == .WaitToRestartFromWin {                         // ゲームクリアからのリスタート待ちの場合
             gameWinTitle.removeFromParent()                             //     ゲームクリア用タイトルをシーンから削除する
