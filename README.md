@@ -17,6 +17,7 @@ SpriteKitを使って、簡単なシューティングゲームを作成しま�
 Step 5を実現するためには、<a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>をゲームプロジェクトに追加する必要があります。
 
 以下の手順に従って、<a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>をプロジェクトに追加してください:
+
 1. <a href="https://github.com/tapouillo/BMGlyphLabelSwift">`BMGlyphLabelSwift`</a>の最新ソースコードのアーカイブをダウンロードします (<a href="https://github.com/tapouillo/BMGlyphLabelSwift/archive/master.zip">ここ</a>をクリックすると、アーカイブがダウンロードされます)
 2. ダウンロードしたアーカイブを展開します
 3. 展開したフォルダ中にある、"BMGlyphLabel"フォルダ内の`BMGlyphFont.swift`と`BMGlyphLabel.swift`をゲームプロジェクトのプロジェクトナビゲータにドラッグ・アンド・ドロップします
