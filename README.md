@@ -26,64 +26,6 @@ Step 5を実現するためには、<a href="https://github.com/tapouillo/BMGlyp
 # ビューコントローラー(`GameViewController.swift`)
 ``` swift
 //
-//  GameViewController.swift
-//  simple-shooting-game
-//
-//  Created by Hidenori Kojima on 2016/12/27.
-//  Copyright © 2016年 Hidenori Kojima. All rights reserved.
-//
-
-import UIKit
-import SpriteKit
-import GameplayKit
-
-class GameViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        if let view = self.view as! SKView? {
-            // Load the SKScene from 'GameScene.sks'
-            let scene = GameScene(size: view.frame.size)
-            // Set the scale mode to scale to fit the window
-            scene.scaleMode = .aspectFit
-
-            // Present the scene
-            view.presentScene(scene)
-
-            view.ignoresSiblingOrder = true
-
-            view.showsFPS = false
-            view.showsNodeCount = false
-        }
-    }
-
-    override var shouldAutorotate: Bool {
-        return true
-    }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return .allButUpsideDown
-        } else {
-            return .all
-        }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
-}
-```
-
-# メインコード(`GameScene.swift`)
-``` swift
-//
 //  GameScene.swift
 //  simple-shooting-game
 //
@@ -126,27 +68,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    private var player : SKSpriteNode = SKSpriteNode(imageNamed: "spaceship01")     // プレイヤー (スペースシップ)
-    private var motionManager: CMMotionManager = CMMotionManager()                  // モーションマネージャー: iPadの傾きを検出する
-    private var beamCount = 0                                                       // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
-    private var lastEnemySpawnedTime: TimeInterval!                                 // 最後に敵を生成した時刻を保持するための変数
-    private var bgm = AVAudioPlayer()                                               // BGMようのオーディオプレイヤー
-    private var gameState = GameState.Playing                                       // ゲームの現在の状態
-    private var gameWinTitle = SKSpriteNode(imageNamed: "game_win")                 // ゲームクリア用タイトル
-    private var gameOverTitle = SKSpriteNode(imageNamed: "game_over")               // ゲームオーバー用タイトル
-    private var restartButton = SKSpriteNode(imageNamed: "restart_button")          // リスタートボタン
+    private var player: SKSpriteNode!                               // プレイヤー (スペースシップ)
+    private var motionManager: CMMotionManager = CMMotionManager()  // モーションマネージャー: iPadの傾きを検出する
+    private var beamCount = 0                                       // ビームの発射数: 同時発射数を最大3発に制限するためのカウンター
+    private var lastEnemySpawnedTime: TimeInterval!                 // 最後に敵を生成した時刻を保持するための変数
+    private var bgm = AVAudioPlayer()                               // BGMようのオーディオプレイヤー
+    private var gameState = GameState.Playing                       // ゲームの現在の状態
+    private var gameWinTitle: SKSpriteNode!             // ゲームクリア用タイトル
+    private var gameOverTitle: SKSpriteNode!            // ゲームオーバー用タイトル
+    private var restartButton: SKSpriteNode!            // リスタートボタン
 
-    private let playerCategory: UInt32 = 0x1 << 0  // プレイヤーとプレイヤービームの衝突判定カテゴリを01(2進数)にする
-    private let enemyCategory: UInt32 = 0x1 << 1   // 敵と敵ビームの衝突判定カテゴリを10(2進数)にする
+    private let playerCategory: UInt32 = 0x1 << 0       // プレイヤーとプレイヤービームの衝突判定カテゴリを01(2進数)にする
+    private let enemyCategory: UInt32 = 0x1 << 1        // 敵と敵ビームの衝突判定カテゴリを10(2進数)にする
 
     private let font  = BMGlyphFont(name:"88ZenFont")   // 88Zenフォント(スコア表記に使用する)
     private var scoreLabel: BMGlyphLabel!               // ゲームスコアを表示するためのラベル
+    private var scoreMargin: CGPoint!                   // ゲームスコアを左上に表示する際のマージン
     private var currentScore = 0                        // 現在のゲームスコア
 
     private var distanceMeter: DistanceMeter!           // ゲームの進行距離表示メーター
     private var gameStartTime: TimeInterval!            // ゲームのスタート時間
 
     override func didMove(to view: SKView) {
+
+        player = SKSpriteNode(imageNamed: getImage("spaceship01"))              // プレイヤーにデバイスに応じた画像をセットする
+        gameWinTitle = SKSpriteNode(imageNamed: getImage("game_win"))           // ゲームクリア用タイトルにデバイスに応じた画像をセットする
+        gameOverTitle = SKSpriteNode(imageNamed: getImage("game_over"))         // ゲームオーバー用タイトルにデバイスに応じた画像をセットする
+        restartButton = SKSpriteNode(imageNamed: getImage("restart_button"))    // リスタートボタンにデバイスに応じた画像をセットする
 
         // 画面をミッドナイトブルー(red = 44, green = 62, blue = 80)に設定する
         // 色参照: https://flatuicolors.com/
@@ -165,7 +113,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(player)    // シーンにプレイヤーを追加する
 
         // 星背景(前面)を配置する
-        let starFront = SKSpriteNode(imageNamed: "star_front")
+        let starFront = SKSpriteNode(imageNamed: getImage("star_front"))
         starFront.anchorPoint = CGPoint(x: 0, y: 0) // 星背景(前面)の左下を原点とする
         starFront.position = CGPoint(x: 0, y: 0)    // シーンの左下に配置する
         starFront.zPosition = 10                    // プレイヤーよりも背面に配置する
@@ -180,7 +128,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ))
 
         // 星背景(後面)を配置する
-        let starBack = SKSpriteNode(imageNamed: "star_back")
+        let starBack = SKSpriteNode(imageNamed: getImage("star_back"))
         starBack.anchorPoint = CGPoint(x: 0, y: 0)  // 星背景(後面)の左下を原点とする
         starBack.position = CGPoint(x: 0, y: 0)     // シーンの左下に配置する
         starBack.zPosition = 1                      // 星背景(前面)よりも背面に配置する
@@ -219,16 +167,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         motionManager.startAccelerometerUpdates()
 
         // ゲームスコア用ラベルをセットアップする
-        scoreLabel = BMGlyphLabel(txt: "スコア: \(currentScore)", fnt: font)     // ゲームスコア用ラベルを作成する
-        scoreLabel.setHorizontalAlignment(.left)                                // ラベルの横方向基準点を左端にする
-        scoreLabel.setVerticalAlignment(.top)                                   // ラベルの縦方向基準点を上端にする
-        scoreLabel.position = CGPoint(x: 24, y: size.height - 16)               // ラベルをシーン左上に配置する
-        addChild(scoreLabel)                                                    // ゲームスコア用ラベルをシーンに追加する
+        scoreLabel = createScoreLabel()                                                 // ゲームスコア用ラベルを作成する
+        scoreLabel.setHorizontalAlignment(.left)                                        // ラベルの横方向基準点を左端にする
+        scoreLabel.setVerticalAlignment(.top)                                           // ラベルの縦方向基準点を上端にする
+        scoreMargin = getScoreMargin()                                                  // ラベルのマージン情報を取得する
+        scoreLabel.position = CGPoint(x: scoreMargin.x, y: size.height - scoreMargin.y) // ラベルをシーン左上に配置する
+        addChild(scoreLabel)                                                            // ゲームスコア用ラベルをシーンに追加する
 
         // ゲームの進行距離表示メーターをセットアップする
         distanceMeter = DistanceMeter(size: CGSize(width: 16, height: size.height))
         distanceMeter.anchorPoint = CGPoint.zero                        // 原点を左下にする
         distanceMeter.position = CGPoint(x: size.width - 16, y: 0)      // シーンの左端に配置する
+        distanceMeter.zPosition = 20                                    // シーンの高さ(zPosition)を背景とプレイヤーの間にする
         addChild(distanceMeter)                                         // メーターをシーンに追加する
     }
 
@@ -283,7 +233,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 現在のビーム発射数が3発に達していない場合、ビームを発射する
         if beamCount < 3 {
             // ビーム用のスプライトを生成する
-            let beam = SKSpriteNode(imageNamed: "beam")
+            let beam = SKSpriteNode(imageNamed: getImage("beam"))
             beam.anchorPoint = CGPoint(x: 0.5, y: 1)  // ビームの中央上側を原点とする
             beam.position = CGPoint(x: player.position.x, y: player.position.y + player.size.height * 0.5)    // プレイヤーの先頭にビームを配置する
             beam.zPosition = player.zPosition - 1   // プレイヤースプライトの背面に配置する
@@ -320,12 +270,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if fabs(data.acceleration.x) > 0.2 {
                 player.position.x += CGFloat(20 * data.acceleration.x)
                 if data.acceleration.x > 0 {
-                    player.texture = SKTexture(imageNamed: "spaceship03")
+                    player.texture = SKTexture(imageNamed: getImage("spaceship03"))
                 } else {
-                    player.texture = SKTexture(imageNamed: "spaceship02")
+                    player.texture = SKTexture(imageNamed: getImage("spaceship02"))
                 }
             } else {
-                player.texture = SKTexture(imageNamed: "spaceship01")
+                player.texture = SKTexture(imageNamed: getImage("spaceship01"))
             }
             // iPadの縦方向の傾きが一定以上だった場合、傾き量に応じてプレイヤーを縦方向に移動させる
             if fabs(data.acceleration.y) > 0.2 {
@@ -346,7 +296,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // 敵を生成するメソッド
     private func spawnEnemy() {
-        let enemy = SKSpriteNode(imageNamed: "enemy_ship")  // 敵のスプライトを作成する
+        let enemy = SKSpriteNode(imageNamed: getImage("enemy_ship"))  // 敵のスプライトを作成する
         enemy.anchorPoint = CGPoint(x: 0.5, y: 0.5)         // 敵スプライトの中心を原点とする
         enemy.position.x = size.width * (0.25 + CGFloat(arc4random_uniform(5)) / 10.0)  // 敵の横方向の位置をシーン幅の1/4〜3/4の間の値にする
         enemy.position.y = size.height + enemy.size.height * 0.5                        // 敵の縦方向の位置をシーン上端にする
@@ -399,7 +349,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // 敵のビームを生成するメソッド
     private func spawnEnemyBeam(enemy: SKSpriteNode) {
-        let beam = SKSpriteNode(imageNamed: "enemy_beam")   // 敵ビームのスプライトを作成する
+        let beam = SKSpriteNode(imageNamed: getImage("enemy_beam"))   // 敵ビームのスプライトを作成する
         beam.anchorPoint = CGPoint(x: 0.5, y: 0)            // 敵ビームスプライトの中央下側を原点とする
         beam.position = CGPoint(x: enemy.position.x, y: enemy.position.y - enemy.size.height * 0.5)    // 敵スプライトの先端にビームを配置する
         beam.zPosition = enemy.zPosition - 1                // 敵スプライトの背面にビームを配置する
@@ -461,8 +411,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             SKAction.removeFromParent()
         ]))
         // プレイヤー爆発用のスプライトをセットアップする
-        let explosion = SKSpriteNode(imageNamed: "explosion")   // プレイヤー爆発用スプライトを作成する
+        let explosion = SKSpriteNode(imageNamed: getImage("explosion"))   // プレイヤー爆発用スプライトを作成する
         explosion.position = player.position                    // プレイヤーと同じ位置に配置する
+        explosion.zPosition = player.zPosition                  // プレイヤーと同じ高さ(zPosition)にする
         explosion.alpha = 0                                     // 最初はスプライトを透過度(アルファ)を透明にする
         explosion.setScale(0)                                   // 最初はスプライトの倍率(スケール)を0にする
         // プレイヤー爆発スプライトで以下の2つのアクションを並行して実行する:
@@ -496,8 +447,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             SKAction.removeFromParent()
         ]))
         // 敵爆発用のスプライトをセットアップする
-        let explosion = SKSpriteNode(imageNamed: "enemy_explosion") // 敵爆発用スプライトを作成する
+        let explosion = SKSpriteNode(imageNamed: getImage("enemy_explosion")) // 敵爆発用スプライトを作成する
         explosion.position = enemy.position                         // 敵と同じ位置に配置する
+        explosion.zPosition = enemy.zPosition                       // 敵と同じ高さ(zPosition)にする
         explosion.alpha = 0                                         // 最初はスプライトを透過度(アルファ)を透明にする
         explosion.setScale(0)                                       // 最初はスプライトの倍率(スケール)を0にする
         // 敵爆発スプライトで以下の2つのアクションを並行して実行する:
@@ -628,7 +580,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             restartButton.removeFromParent()                            //     リスタートボタンをシーンから削除する
             scoreLabel.setHorizontalAlignment(.left)
             scoreLabel.setVerticalAlignment(.top)
-            scoreLabel.position = CGPoint(x: 24, y: size.height - 16)   //     スコアラベルをシーン左上に配置し直す
+            scoreLabel.position = CGPoint(x: scoreMargin.x, y: size.height - scoreMargin.y) //     スコアラベルをシーン左上に配置し直す
         } else if gameState == .WaitToRestartFromLose {                 // ゲームオーバーからのリスタート待ちの場合
             gameOverTitle.removeFromParent()                            //     ゲームオーバー用タイトルをシーンから削除する
             player.position = CGPoint(x: size.width * 0.5, y: player.size.height * 0.5 + 16)    // プレイヤーを画面中央下側に配置する
@@ -636,6 +588,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             addChild(scoreLabel)                                        //     ゲームスコア用ラベルをシーンに追加する
         }
         gameState = .Playing                                // ゲームの状態をプレイ中にする
+    }
+
+    // デバイスに応じた画像名を返すメソッド
+    private func getImage(_ name: String) -> String {
+        if UIDevice.current.userInterfaceIdiom == .pad {    // iPadの場合
+            return name                                     //     そのままの名前で返す
+        } else {                                            // iPhoneの場合
+            return "\(name)-phone"                          //     名前の最後に"-phone"と付けて返す
+        }
+    }
+
+    // デバイスに応じたスコアラベルを生成するメソッド
+    private func createScoreLabel() -> BMGlyphLabel{
+        let label = BMGlyphLabel(txt: "スコア: \(currentScore)", fnt: font)
+        if UIDevice.current.userInterfaceIdiom == .phone {  // iPhoneの場合
+            label.setScale(0.75)                            //     少しサイズを小さくする
+        }
+        return label
+    }
+
+    // デバイスに応じたスコアラベルのマージンを返すメソッド
+    private func getScoreMargin() -> CGPoint {
+        if UIDevice.current.userInterfaceIdiom == .pad {    // iPadの場合
+            return CGPoint(x: 24, y: 16)                    //     左マージン: 24point, 上マージン: 16pointとする
+        } else {                                            // iPhoneの場合
+            return CGPoint(x: 12, y: 8)                     //　　　左マージン: 12point, 上マージン: 8pointとする
+        }
     }
 }
 ```
